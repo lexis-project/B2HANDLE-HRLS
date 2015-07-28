@@ -1,0 +1,23 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_0.dtd">
+
+<!-- Use this file for testing Jetty deployment. For example if you are using 
+	the jetty-run-jetty Eclipse plugin, provide this file via the advanced options 
+	in the run configuration so a security realm is available. -->
+
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+
+	<Call name="addBean">
+		<Arg>
+			<New class="org.eclipse.jetty.security.HashLoginService">
+				<Set name="name">hrls-users</Set>
+				<Set name="config">
+					<SystemProperty name="jetty.home" default="." />
+					/hrls-realm-test.properties
+				</Set>
+			</New>
+		</Arg>
+	</Call>
+
+
+</Configure>

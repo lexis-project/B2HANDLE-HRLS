@@ -29,6 +29,12 @@
         <version>9.0.7.v20131107</version>  <!-- jetty 8.1.15 is used by Handle System 8 (beta) -->
         <configuration>
           <webAppSourceDirectory>WebContent</webAppSourceDirectory>
+		  <loginServices>
+      		<loginService implementation="org.eclipse.jetty.security.HashLoginService">
+        	  <name>hrls-users</name>
+       		  <config>${basedir}/hrls-realm-test.properties</config>
+      	    </loginService>
+    	  </loginServices>
         </configuration>
       </plugin>
     </plugins>

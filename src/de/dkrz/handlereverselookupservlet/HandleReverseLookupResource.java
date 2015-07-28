@@ -30,7 +30,7 @@ public class HandleReverseLookupResource {
 	@GET
 	@Path("ping")
 	public String ping() {
-		return "OK";
+		return "OK\n";
 	}
 
 	@GET
