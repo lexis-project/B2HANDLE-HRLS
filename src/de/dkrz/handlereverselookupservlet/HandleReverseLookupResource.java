@@ -39,10 +39,16 @@ public class HandleReverseLookupResource {
 		ResultSet resultSet = null;
 		try {
 			connection = dataSource.getConnection();
-			statement = connection.prepareStatement("select handle from handles where type='URL' and data=?");
-			statement.setString(1, url);
+			String modifiedUrl = ""+url;
+			if (modifiedUrl.contains("*")) {
+				modifiedUrl = modifiedUrl.replace("*", "%");
+				statement = connection.prepareStatement("select handle from handles where type='URL' and data like ?");
+			}
+			else {
+				statement = connection.prepareStatement("select handle from handles where type='URL' and data=?");
+			}
+			statement.setString(1, modifiedUrl);
 			resultSet = statement.executeQuery();
-			String s = "";
 			List<String> results = new LinkedList<String>();
 			while (resultSet.next()) {
 				results.add(resultSet.getString(1));
