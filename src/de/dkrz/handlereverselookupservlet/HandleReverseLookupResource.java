@@ -12,9 +12,9 @@ import javax.sql.DataSource;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -39,14 +39,34 @@ public class HandleReverseLookupResource {
 	public Response search(@Context UriInfo info) {
 		MultivaluedMap<String, String> params = info.getQueryParameters();
 		try {
-			return Response.ok(genericSearch(params), MediaType.APPLICATION_JSON).build();
+			List<String> result;
+			if (params.containsKey("limit")) {
+				MultivaluedMap<String, String> newParams = new MultivaluedHashMap<String, String>(params); 
+				int limit = Integer.parseInt(newParams.getFirst("limit"));
+				newParams.remove("limit");
+				result = genericSearch(newParams, limit);
+			}
+			else {
+				result = genericSearch(params, null);
+			}
+			return Response.ok(result, MediaType.APPLICATION_JSON).build();
 		} catch (SQLException exc) {
 			return Response.serverError()
 					.entity("\"" + exc.getMessage() + " (SQL error code " + exc.getErrorCode() + ")\"\n").build();
+		} catch (NumberFormatException exc) {
+			return Response.serverError().entity("\"Invalid number: "+exc.getMessage()+"\"\n").build();
 		}
 	}
 
-	public List<String> genericSearch(MultivaluedMap<String, String> parameters) throws SQLException {
+	/**
+	 * Queries SQL for Handles whose type/data pairs match particular filters.
+	 * 
+	 * @param parameters
+	 * @param limit SQL query limit. May be null.
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<String> genericSearch(MultivaluedMap<String, String> parameters, Integer limit) throws SQLException {
 		ReverseLookupConfig config = ReverseLookupConfig.getInstance();
 		DataSource dataSource = config.getHandleDataSource();
 		Connection connection = null;
@@ -75,6 +95,8 @@ public class HandleReverseLookupResource {
 					tableIndex++;
 				}
 			}
+			if (limit != null)
+				sb.append(" limit "+limit);
 			// Now fill statement with stringParams
 			statement = connection.prepareStatement(sb.toString());
 			Iterator<String> paramsIter = stringParams.iterator();
@@ -83,7 +105,6 @@ public class HandleReverseLookupResource {
 				statement.setString(index, paramsIter.next());
 				index++;
 			}
-			LOGGER.debug(statement.toString());
 			// Execute statement
 			resultSet = statement.executeQuery();
 			List<String> results = new LinkedList<String>();
