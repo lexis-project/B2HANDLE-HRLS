@@ -27,8 +27,12 @@ public class HandleReverseLookupResource {
 	@GET
 	@Path("handles")
 	@Produces("application/json")
-	public Response search(@QueryParam("url") String url) throws SQLException {
-		return Response.ok(genericSearch(url), MediaType.APPLICATION_JSON).build();
+	public Response search(@QueryParam("url") String url) {
+		try {
+			return Response.ok(genericSearch(url), MediaType.APPLICATION_JSON).build();
+		} catch (SQLException exc) {
+			return Response.serverError().entity("\""+exc.getMessage()+" (SQL error code "+exc.getErrorCode()+")\"\n").build();
+		}
 	}
 	
 	public List<String> genericSearch(@QueryParam("url") String url) throws SQLException {
