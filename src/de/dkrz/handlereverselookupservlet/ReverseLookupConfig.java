@@ -57,7 +57,7 @@ public class ReverseLookupConfig {
 		super();
 		if (this.instance != null)
 			throw new IllegalStateException("Cannot instantiate singleton more than once");
-		this.useSql = getBooleanParam(servletContext, additionalProperties, "useSQL", false);
+		this.useSql = getBooleanParam(servletContext, additionalProperties, "useSql", false);
 		this.useSolr = getBooleanParam(servletContext, additionalProperties, "useSolr", false);
 		if (useSql) {
 			this.jdbcDriverClassName = getParam(servletContext, additionalProperties, "jdbcDriverClassName", true);

@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.StatusType;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,8 +26,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
@@ -48,15 +49,25 @@ public class HandleReverseLookupResource {
 		MultivaluedMap<String, String> params = info.getQueryParameters();
 		ReverseLookupConfig configuration = ReverseLookupConfig.getInstance();
 		Integer limit = null;
+		boolean enforceSql = false;
 		MultivaluedMap<String, String> filteredParams = new MultivaluedHashMap<String, String>(params);
-		if (filteredParams.containsKey("limit")) {
-			limit = Integer.parseInt(filteredParams.getFirst("limit"));
-			filteredParams.remove("limit");
-		}
 		try {
+			if (filteredParams.containsKey("limit")) {
+				limit = Integer.parseInt(filteredParams.getFirst("limit"));
+				filteredParams.remove("limit");
+			}
+			if (filteredParams.containsKey("enforcesql")) {
+				enforceSql = Boolean.parseBoolean(filteredParams.getFirst("enforcesql"));
+				filteredParams.remove("enforcesql");
+				if (enforceSql && !configuration.useSql())
+					return Response.serverError()
+							.entity("You asked to enforce SQL usage for searching, but this service is not configured for SQL.")
+							.build();
+			}
 			List<String> result;
-			// Search via solr takes precedence over SQL
-			if (configuration.useSolr()) {
+			// If available, search via solr takes precedence over SQL unless
+			// enforced otherwise
+			if (configuration.useSolr() && !enforceSql) {
 				result = genericSolrSearch(filteredParams, limit);
 			} else {
 				result = genericSqlSearch(filteredParams, limit);
@@ -75,6 +86,8 @@ public class HandleReverseLookupResource {
 		} catch (SolrServerException exc) {
 			LOGGER.error(exc);
 			return Response.serverError().entity("\"SolrServerException: " + exc.getMessage() + "\"\n").build();
+		} catch (RemoteSolrException exc) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("\"RemoteSolrException: " + exc.getMessage() + "\"\n").build();
 		}
 	}
 
