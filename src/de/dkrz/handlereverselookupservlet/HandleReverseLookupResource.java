@@ -67,6 +67,10 @@ public class HandleReverseLookupResource {
 	 * @throws SQLException
 	 */
 	public List<String> genericSearch(MultivaluedMap<String, String> parameters, Integer limit) throws SQLException {
+		List<String> results = new LinkedList<String>();
+		if (parameters.isEmpty()) {
+			return results;
+		}
 		ReverseLookupConfig config = ReverseLookupConfig.getInstance();
 		DataSource dataSource = config.getHandleDataSource();
 		Connection connection = null;
@@ -107,7 +111,6 @@ public class HandleReverseLookupResource {
 			}
 			// Execute statement
 			resultSet = statement.executeQuery();
-			List<String> results = new LinkedList<String>();
 			while (resultSet.next()) {
 				results.add(resultSet.getString(1));
 			}
