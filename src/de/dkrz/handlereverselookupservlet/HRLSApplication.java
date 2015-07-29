@@ -40,14 +40,9 @@ public class HRLSApplication extends Application {
 			}
 		}
 		ReverseLookupConfig hrlsConfig = new ReverseLookupConfig(servletContext, env);
-		/*
-		 * Load jdbc driver class - this is apparently NOT done automatically
-		 * for some combinations of driver, tomcat and Java
-		 */
-		if ((hrlsConfig.getJdbcDriverClassName() != null) && (hrlsConfig.getJdbcDriverClassName().length() > 0))
-			Class.forName(hrlsConfig.getJdbcDriverClassName());
 		// Create DataSource instance
 		hrlsConfig.createHandleDataSource();
+		hrlsConfig.createSolrClient();
 		// Set up servlet
 		singletons.add(new HandleReverseLookupResource());
 	}
