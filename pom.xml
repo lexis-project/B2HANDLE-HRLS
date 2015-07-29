@@ -31,8 +31,8 @@
           <webAppSourceDirectory>WebContent</webAppSourceDirectory>
 		  <loginServices>
       		<loginService implementation="org.eclipse.jetty.security.HashLoginService">
-        	  <name>hrls-users</name>
-       		  <config>${basedir}/hrls-realm-test.properties</config>
+        	  <name>default</name>
+       		  <config>${basedir}/realm-test.properties</config>
       	    </loginService>
     	  </loginServices>
         </configuration>

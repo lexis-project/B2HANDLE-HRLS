@@ -33,10 +33,10 @@
       <role-name>handle-search</role-name>
     </auth-constraint>
   </security-constraint>
-  
+   
   <login-config>
     <auth-method>BASIC</auth-method>
-    <realm-name>hrls-users</realm-name>
+    <realm-name>default</realm-name>
   </login-config>
   
   <security-role>

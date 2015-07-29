@@ -10,10 +10,9 @@
 	<Call name="addBean">
 		<Arg>
 			<New class="org.eclipse.jetty.security.HashLoginService">
-				<Set name="name">hrls-users</Set>
+				<Set name="name">default</Set>
 				<Set name="config">
-					<SystemProperty name="jetty.home" default="." />
-					/hrls-realm-test.properties
+					<SystemProperty name="jetty.home" default="." />/realm-test.properties
 				</Set>
 			</New>
 		</Arg>
