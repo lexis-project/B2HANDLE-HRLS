@@ -105,11 +105,20 @@ public class HandleReverseLookupResource {
 				query.setRows(1000);
 			else
 				query.setRows(limit);
+			StringBuilder querysb = new StringBuilder();
+			int i = 0;
 			for (String key : parameters.keySet()) {
 				List<String> values = parameters.get(key);
-				for (String v : values)
-					query.add("q", key + ":" + escapeSolrQueryChars(v));
+				Iterator<String> valueIter = values.iterator();
+				while (valueIter.hasNext()) {
+					String v = valueIter.next();
+					if (i > 0)
+						querysb.append(" AND ");
+					querysb.append(key+":"+escapeSolrQueryChars(v));
+					i++;
+				}
 			}
+			query.add("q", querysb.toString());
 			LOGGER.debug("Solr query: " + query);
 			QueryResponse queryResponse = solr.query(query);
 			SolrDocumentList docs = queryResponse.getResults();
