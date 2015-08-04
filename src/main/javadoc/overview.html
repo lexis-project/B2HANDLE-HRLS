@@ -12,7 +12,7 @@ The path <code>{HANDLE_HOME}</code> is the home directory of the target Handle s
 <ol>
 <li>Copy the .war to <code>{HANDLE_HOME}/webapps</code>.</li>
 <li>Accessing the servlet's web methods requires authentication. Currently, HTTP Basic Authentication is supported. To enable this, a file <code>{HANDLE_HOME}/realm.properties</code> must be created. The format of this file is described <a href="http://wiki.eclipse.org/Jetty/Tutorial/Realms" target="_blank">here (HashLoginService)</a>. The rolename for Handle search is "handle-search".</li>
-<li>The servlet requires a properties file <code>{HANDLE_HOME}/handlereverselookupservlet.properties</code>with details on how to connect to the SQL or Solr storage for searching. The full format of this file is given further below.</li>
+<li>The servlet requires a properties file <code>{HANDLE_HOME}/handlereverselookupservlet.properties</code>with details on how to connect to the SQL or Solr storage for searching. The full format of this file is given further below.  (If deployed via Tomcat, the parameters should be provided as Servlet init params via context.xml.)</li>
 <li>If you configure the servlet for SQL access, you need to place the driver's .jar file in the Handle Server's lib directory.</li>
 <li>Start your Handle server.</li>
 <li>The reverse lookup service can be accessed under the server's subpath <code>/hrls</code>. A simple test may be to call http://your.server/hrls/ping - this should ask for authentication.</li>
@@ -26,7 +26,7 @@ useSql = true
 sqlConnectionString = (your SQL connection string)
 sqlUsername = (user)
 sqlPassword = (password)
-JdbcDriverClassName = (your JDBC driver class name)
+jdbcDriverClassName = (your JDBC driver class name)
 
 useSolr = true
 solrCollection = (name of your Solr collection)
