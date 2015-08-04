@@ -41,7 +41,21 @@ public class HandleReverseLookupResource {
 	public String ping() {
 		return "OK\n";
 	}
-
+	
+	/**
+	 * Searches over Handles via their record information. The method will return a list of all Handles whose records match all of the supplied parameters.
+	 * The parameters are not a fixed set; the usual 'URL' field is a good example as this establishes what is usually understood as Handle reverse-lookup: Get to a Handle given a target URL. 
+	 * However, any fields that are available from the Handle SQL storage or a Solr index can be used.
+	 * 
+	 * All parameters are treated as such search fields except for a few special ones:
+	 * <ul>
+	 * <li><em>limit:</em> Limits the maximum number of results to return. The default limit for Solr queries is 1000; there is no default for SQL. Limits for Solr larger than 1000 can be specified.</li>
+	 * <li><em>enforcesql:</em> If both SQL and Solr are configured for searching, Solr takes precedence by default. If enforcesql is set to true, SQL will be used instead of Solr.
+	 * </dl>
+	 * 
+	 * @param info A UriInfo object carrying, among other things, the URL parameters. See above for explanations.
+	 * @return A simple list of Handles (just Handle names, no record excerpts, even not for the fields searched).
+	 */
 	@GET
 	@Path("handles")
 	@Produces("application/json")
@@ -91,6 +105,15 @@ public class HandleReverseLookupResource {
 		}
 	}
 
+	/**
+	 * Searches Handles via Solr.
+	 * 
+	 * @param parameters A map of all search fields. Should not contain special parameters such as 'limit' or 'enforcesql'.
+	 * @param limit Maximum number of results to return. May be null, in which case 1000 is the default.
+	 * @return A list of Handles.
+	 * @throws SolrServerException
+	 * @throws IOException
+	 */
 	public List<String> genericSolrSearch(MultivaluedMap<String, String> parameters, Integer limit)
 			throws SolrServerException, IOException {
 		List<String> results = new LinkedList<String>();
@@ -150,10 +173,10 @@ public class HandleReverseLookupResource {
 	/**
 	 * Queries SQL for Handles whose type/data pairs match particular filters.
 	 * 
-	 * @param parameters
+	 * @param parameters A map of all search fields. Should not contain special parameters such as 'limit' or 'enforcesql'.
 	 * @param limit
 	 *            SQL query limit. May be null.
-	 * @return
+	 * @return A list of Handles.
 	 * @throws SQLException
 	 */
 	public List<String> genericSqlSearch(MultivaluedMap<String, String> parameters, Integer limit) throws SQLException {

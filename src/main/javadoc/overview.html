@@ -1,0 +1,37 @@
+<body>
+
+This project provides a servlet which offers search on Handle records including simple reverse lookup, i.e., finding a Handle if only a target URL is known.<br/>
+At the backend, the servlet supports two options: A Handle SQL storage or search via a separate Solr index. The default setup of the Handle Server software based on BerkeleyDB is not supported.<br/>
+
+The servlet is implemented based on JAX-RS 2.0 and can be deployed for instance in a Tomcat container or an (embedded) Jetty.
+
+<h2>Deployment in the embedded Handle Server 8 Jetty</h2>
+
+The path <code>{HANDLE_HOME}</code> is the home directory of the target Handle server, for example <code>~/hs/svr_1</code>.
+
+<ol>
+<li>Copy the .war to <code>{HANDLE_HOME}/webapps</code>.</li>
+<li>Accessing the servlet's web methods requires authentication. Currently, HTTP Basic Authentication is supported. To enable this, a file <code>{HANDLE_HOME}/realm.properties</code> must be created. The format of this file is described <a href="http://wiki.eclipse.org/Jetty/Tutorial/Realms" target="_blank">here (HashLoginService)</a>. The rolename for Handle search is "handle-search".</li>
+<li>The servlet requires a properties file <code>{HANDLE_HOME}/handlereverselookupservlet.properties</code>with details on how to connect to the SQL or Solr storage for searching. The full format of this file is given further below.</li>
+<li>If you configure the servlet for SQL access, you need to place the driver's .jar file in the Handle Server's lib directory.</li>
+<li>Start your Handle server.</li>
+<li>The reverse lookup service can be accessed under the server's subpath <code>/hrls</code>. A simple test may be to call http://your.server/hrls/ping - this should ask for authentication.</li>
+</ol>
+
+<h2>Servlet properties configuration file format</h2>
+
+The <code>handlereverselookupservlet.properties</code> file format is as follows. The file consists of two blocks, one for SQL and one for Solr. At least one of either must be present.
+<pre>
+useSql = true
+sqlConnectionString = (your SQL connection string)
+sqlUsername = (user)
+sqlPassword = (password)
+JdbcDriverClassName = (your JDBC driver class name)
+
+useSolr = true
+solrCollection = (name of your Solr collection)
+solrCloudZkHost = (Zookeeper host and port)
+</pre>
+
+
+</body>

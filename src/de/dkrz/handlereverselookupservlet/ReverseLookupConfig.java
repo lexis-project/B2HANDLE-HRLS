@@ -2,6 +2,7 @@ package de.dkrz.handlereverselookupservlet;
 
 import java.util.Map;
 
+import javax.jws.soap.SOAPBinding.Use;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
@@ -10,50 +11,73 @@ import org.apache.commons.dbcp2.datasources.SharedPoolDataSource;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 
 /**
- * A singleton.
+ * A singleton holding configuration information for the reverse lookup service.
+ * This singleton is initialized once at servlet startup and persists over
+ * multiple sessions that invoke the HandleReverseLookupResource. <br/>
+ * 
+ * The singleton also holds the connection instances to talk to the Solr and/or
+ * SQL backends.
  * 
  */
 public class ReverseLookupConfig {
-	
+
 	private static ReverseLookupConfig instance = null;
-	
+
 	private String jdbcDriverClassName;
 	private String sqlConnectionString;
 	private String sqlUsername;
 	private String sqlPassword;
 	private DataSource handleDataSource;
-	
+
 	private boolean useSolr = false;
 	private boolean useSql = false;
-	
+
 	private String solrCloudZkHost;
 	private String solrCollection;
-	
+
 	private CloudSolrClient solrClient;
-	
-	private static String getParam(ServletContext sc, Map<Object, Object> additionalProperties, Object key, boolean requiredParam) throws InvalidConfigException {
+
+	private static String getParam(ServletContext sc, Map<Object, Object> additionalProperties, Object key,
+			boolean requiredParam) throws InvalidConfigException {
 		String s = sc.getInitParameter(key.toString());
 		if (s == null) {
 			Object x = additionalProperties.get(key);
-			if (x != null) s = x.toString();
+			if (x != null)
+				s = x.toString();
 		}
 		if (requiredParam && (s == null)) {
-			throw new InvalidConfigException("The configuration must specify parameter '"+key+"'!");
+			throw new InvalidConfigException("The configuration must specify parameter '" + key + "'!");
 		}
 		return s;
 	}
-	
-	private static boolean getBooleanParam(ServletContext sc, Map<Object, Object> additionalProperties, Object key, boolean requiredParam) throws InvalidConfigException {
+
+	private static boolean getBooleanParam(ServletContext sc, Map<Object, Object> additionalProperties, Object key,
+			boolean requiredParam) throws InvalidConfigException {
 		if (sc.getInitParameter(key.toString()) == null) {
 			Object x = additionalProperties.get(key);
-			if (x != null) return Boolean.parseBoolean(x.toString());
-			else if (requiredParam) throw new InvalidConfigException("The configuration must specify parameter '"+key+"'!"); 
+			if (x != null)
+				return Boolean.parseBoolean(x.toString());
+			else if (requiredParam)
+				throw new InvalidConfigException("The configuration must specify parameter '" + key + "'!");
 		}
 		return Boolean.parseBoolean(sc.getInitParameter(key.toString()));
 	}
-	
 
-	public ReverseLookupConfig(ServletContext servletContext, Map<Object, Object> additionalProperties) throws InvalidConfigException  {
+	/**
+	 * Constructor that initializes the config with parameters from the servlet
+	 * context and additional properties. The servlet context parameters are
+	 * prioritized over the additional params.
+	 * 
+	 * @param servletContext
+	 *            The servlet context is used to retrieve Servlet Init params;
+	 *            these can be configured via web-xml, but also in e.g. Tomcat's
+	 *            context.xml file.
+	 * @param additionalProperties
+	 *            Additional properties, typically read from a properties file.
+	 * @throws InvalidConfigException
+	 */
+	public ReverseLookupConfig(ServletContext servletContext, Map<Object, Object> additionalProperties)
+			throws InvalidConfigException {
 		super();
 		if (this.instance != null)
 			throw new IllegalStateException("Cannot instantiate singleton more than once");
@@ -69,10 +93,16 @@ public class ReverseLookupConfig {
 			this.solrCloudZkHost = getParam(servletContext, additionalProperties, "solrCloudZkHost", true);
 			this.solrCollection = getParam(servletContext, additionalProperties, "solrCollection", true);
 		}
-		if (!(this.useSql || this.useSolr)) throw new InvalidConfigException("The configuration must enable at least one of 'useSolr' or 'useSql'!");
+		if (!(this.useSql || this.useSolr))
+			throw new InvalidConfigException("The configuration must enable at least one of 'useSolr' or 'useSql'!");
 		this.instance = this;
 	}
-	
+
+	/**
+	 * Get the singleton instance, which must have been initialized before.
+	 * 
+	 * @return
+	 */
 	public static ReverseLookupConfig getInstance() {
 		return instance;
 	}
@@ -80,17 +110,26 @@ public class ReverseLookupConfig {
 	public String getJdbcDriverClassName() {
 		return jdbcDriverClassName;
 	}
-	
+
+	/**
+	 * Returns the DataSource instance to use for SQL queries.
+	 * 
+	 * @return DataSource May be null if no SQL backend is available; call
+	 *         {@link ReverseLookupConfig} to confirm first.
+	 */
 	public DataSource getHandleDataSource() {
 		return handleDataSource;
 	}
-	
-	public void setHandleDataSource(DataSource handleDataSource) {
-		this.handleDataSource = handleDataSource;
-	}
 
+	/**
+	 * Creates a {@link ReverseLookupConfig} that can afterwards be retrieved
+	 * via {@link ReverseLookupConfig}. Only call this method once after
+	 * Singleton initialization.
+	 * 
+	 * @throws ClassNotFoundException
+	 */
 	public void createHandleDataSource() throws ClassNotFoundException {
-		if (!useSql) 
+		if (!useSql)
 			return;
 		/*
 		 * Load jdbc driver class - this is apparently NOT done automatically
@@ -101,30 +140,52 @@ public class ReverseLookupConfig {
 		// Now configure pooled driver adapter and pooled data source
 		DriverAdapterCPDS cpds = new DriverAdapterCPDS();
 		cpds.setDriver(jdbcDriverClassName);
-		cpds.setUrl(sqlConnectionString); 
+		cpds.setUrl(sqlConnectionString);
 		cpds.setUser(sqlUsername);
 		cpds.setPassword(sqlPassword);
 		SharedPoolDataSource sharedDS = new SharedPoolDataSource();
 		sharedDS.setConnectionPoolDataSource(cpds);
 		handleDataSource = sharedDS;
 	}
-	
+
+	/**
+	 * Creates a new {@link CloudSolrClient} instance to use during the servlet
+	 * lifetime. The corresponding config options must have been provided.
+	 * 
+	 */
 	public void createSolrClient() {
+		if (!useSolr)
+			return;
 		solrClient = new CloudSolrClient(solrCloudZkHost);
 		solrClient.setDefaultCollection(solrCollection);
 	}
-	
+
+	/**
+	 * Return the {@link CloudSolrClient} instance to use (if configured).
+	 * 
+	 * @return {@link CloudSolrClient} May be null if no Solr backend has been
+	 *         configured. Check with {@link useSolr} first.
+	 */
 	public CloudSolrClient getSolrClient() {
 		return solrClient;
 	}
 
+	/**
+	 * Confirm whether a SQL backend has been configured.
+	 * 
+	 * @return true if a SQL backend is available.
+	 */
 	public boolean useSql() {
 		return useSql;
 	}
-	
+
+	/**
+	 * Confirm whether a Solr backend has been configured.
+	 * 
+	 * @return true if a Solr backend is available.
+	 */
 	public boolean useSolr() {
 		return useSolr;
 	}
-	
 
 }
