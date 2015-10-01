@@ -145,6 +145,7 @@ public class ReverseLookupConfig {
 		cpds.setPassword(sqlPassword);
 		SharedPoolDataSource sharedDS = new SharedPoolDataSource();
 		sharedDS.setConnectionPoolDataSource(cpds);
+		sharedDS.setValidationQuery("SELECT 1"); // should help to enforce auto-recovery of broken connections in the pool
 		handleDataSource = sharedDS;
 	}
 
