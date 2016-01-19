@@ -1,14 +1,15 @@
 package de.dkrz.handlereverselookupservlet;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 import javax.jws.soap.SOAPBinding.Use;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp2.cpdsadapter.DriverAdapterCPDS;
-import org.apache.commons.dbcp2.datasources.SharedPoolDataSource;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.mchange.v2.c3p0.DataSources;
 
 /**
  * A singleton holding configuration information for the reverse lookup service.
@@ -127,8 +128,9 @@ public class ReverseLookupConfig {
 	 * Singleton initialization.
 	 * 
 	 * @throws ClassNotFoundException
+	 * @throws SQLException 
 	 */
-	public void createHandleDataSource() throws ClassNotFoundException {
+	public void createHandleDataSource() throws ClassNotFoundException, SQLException {
 		if (!useSql)
 			return;
 		/*
@@ -137,16 +139,10 @@ public class ReverseLookupConfig {
 		 */
 		if ((getJdbcDriverClassName() != null) && (getJdbcDriverClassName().length() > 0))
 			Class.forName(getJdbcDriverClassName());
-		// Now configure pooled driver adapter and pooled data source
-		DriverAdapterCPDS cpds = new DriverAdapterCPDS();
-		cpds.setDriver(jdbcDriverClassName);
-		cpds.setUrl(sqlConnectionString);
-		cpds.setUser(sqlUsername);
-		cpds.setPassword(sqlPassword);
-		SharedPoolDataSource sharedDS = new SharedPoolDataSource();
-		sharedDS.setConnectionPoolDataSource(cpds);
-		sharedDS.setValidationQuery("SELECT 1"); // should help to enforce auto-recovery of broken connections in the pool
-		handleDataSource = sharedDS;
+		// Create unpooled datasource, then put a pooled one on top of it
+		// (done as described in c3p0 introcuction)
+		DataSource ds_unpooled = DataSources.unpooledDataSource(sqlConnectionString, sqlUsername, sqlPassword);
+		handleDataSource = DataSources.pooledDataSource(ds_unpooled);
 	}
 
 	/**

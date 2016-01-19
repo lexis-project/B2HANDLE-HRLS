@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -26,7 +27,7 @@ public class HRLSApplication extends Application {
 	private Set<Class<?>> emptySet = new HashSet<Class<?>>();
 
 	public HRLSApplication(@Context ServletContext servletContext)
-			throws ClassNotFoundException, FileNotFoundException, IOException, InvalidConfigException {
+			throws ClassNotFoundException, FileNotFoundException, IOException, InvalidConfigException, SQLException {
 		// Get config from context (singleton)
 		Map<Object, Object> env = System.getProperties();
 		// Search for simple config file

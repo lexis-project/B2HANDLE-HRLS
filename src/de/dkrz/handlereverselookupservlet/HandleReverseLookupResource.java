@@ -90,7 +90,7 @@ public class HandleReverseLookupResource {
 		} catch (SQLException exc) {
 			LOGGER.error(exc);
 			return Response.serverError()
-					.entity("\"" + exc.getMessage() + " (SQL error code " + exc.getErrorCode() + ")\"\n").build();
+					.entity("\"" + exc.getMessage() + " (SQL error code " + exc.getErrorCode() + "; SQL State "+exc.getSQLState()+")\"\n").build();
 		} catch (IOException exc) {
 			LOGGER.error(exc);
 			return Response.serverError().entity("\"IOException: " + exc.getMessage() + "\"\n").build();
