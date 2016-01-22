@@ -1,0 +1,1 @@
+B2HANDLE-HRLS provides a Java servlet that will enable reverse-lookup and searching against local a Handle server installation with SQL storage.
