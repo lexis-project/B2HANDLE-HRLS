@@ -191,18 +191,6 @@ public class HandleReverseLookupResource {
 		ResultSet resultSet = null;
 		try {
 			connection = dataSource.getConnection();
-			if (connection.isClosed()) {
-				// Probably closed due to timeout after long inactivity
-				LOGGER.info("Recreating SQL connections...");
-				try {
-					config.createHandleDataSource();
-				} catch (ClassNotFoundException e) {
-					// This usually should not happen as the class was available earlier...
-					LOGGER.error("ClassNotFoundException on recreating the data source - future requests will probably fail!");
-				}
-				dataSource = config.getHandleDataSource();
-				connection = dataSource.getConnection();
-			}
 			StringBuffer sb = new StringBuffer();
 			List<String> stringParams = new LinkedList<String>();
 			if (parameters.size() == 1) {
