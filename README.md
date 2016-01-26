@@ -14,7 +14,7 @@ The .war file will be under subdirectory "target".
 ## How to deploy (using embedded Handle System v8 Jetty)
 
 To deploy the servlet .war in the embedded jetty, copy it to your-instance-directory/webapps.
-The servlet also needs configuration; please refer to the Javadoc main page for more details.
+The servlet also needs configuration; please refer to the Javadoc main page for more details. Most importantly, the servlet requires an environmental variable **HANDLE_SVR** which should point to the Handle server instance's home directory from which the servlet will load its configuration file.
 
 Please make sure you are using a JDBC4 database connector; if you are using a JDBC3 connector, you will have to reconfigure c3p0 (see below).
 
