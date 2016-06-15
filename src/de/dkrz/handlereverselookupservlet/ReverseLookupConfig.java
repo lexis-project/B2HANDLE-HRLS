@@ -116,15 +116,15 @@ public class ReverseLookupConfig {
 	 * Returns the DataSource instance to use for SQL queries.
 	 * 
 	 * @return DataSource May be null if no SQL backend is available; call
-	 *         {@link ReverseLookupConfig} to confirm first.
+	 *         {@link useSql} to confirm first.
 	 */
 	public DataSource getHandleDataSource() {
 		return handleDataSource;
 	}
 
 	/**
-	 * Creates a {@link ReverseLookupConfig} that can afterwards be retrieved
-	 * via {@link ReverseLookupConfig}. Only call this method once after
+	 * Creates a SQL data source that can afterwards be retrieved
+	 * via {@link getHandleDataSource}. Only call this method once after
 	 * Singleton initialization.
 	 * 
 	 * @throws ClassNotFoundException
