@@ -5,9 +5,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 import javax.ws.rs.GET;
@@ -18,7 +20,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.StatusType;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.logging.log4j.LogManager;
@@ -50,7 +51,9 @@ public class HandleReverseLookupResource {
 	 * All parameters are treated as such search fields except for a few special ones:
 	 * <ul>
 	 * <li><em>limit:</em> Limits the maximum number of results to return. The default limit for Solr queries is 1000; there is no default for SQL. Limits for Solr larger than 1000 can be specified.</li>
+	 * <li><em>page (SQL only):</em> Skip the given number of results, enabling pagination if combined with a limit. Limits the maximum number of results to return.</li>
 	 * <li><em>enforcesql:</em> If both SQL and Solr are configured for searching, Solr takes precedence by default. If enforcesql is set to true, SQL will be used instead of Solr.
+	 * <li><em>retrieverecords (SQL only):</em> Do not only return Handle names, but full record contents. Note: This only works if only one search field is given.</li>
 	 * </dl>
 	 * 
 	 * @param info A UriInfo object carrying, among other things, the URL parameters. See above for explanations.
@@ -63,12 +66,18 @@ public class HandleReverseLookupResource {
 		MultivaluedMap<String, String> params = info.getQueryParameters();
 		ReverseLookupConfig configuration = ReverseLookupConfig.getInstance();
 		Integer limit = null;
+		Integer page = null;
 		boolean enforceSql = false;
+		boolean retrieveRecords = false;
 		MultivaluedMap<String, String> filteredParams = new MultivaluedHashMap<String, String>(params);
 		try {
 			if (filteredParams.containsKey("limit")) {
 				limit = Integer.parseInt(filteredParams.getFirst("limit"));
 				filteredParams.remove("limit");
+			}
+			if (filteredParams.containsKey("page")) {
+				page = Integer.parseInt(filteredParams.getFirst("page"));
+				filteredParams.remove("page");
 			}
 			if (filteredParams.containsKey("enforcesql")) {
 				enforceSql = Boolean.parseBoolean(filteredParams.getFirst("enforcesql"));
@@ -78,13 +87,17 @@ public class HandleReverseLookupResource {
 							.entity("You asked to enforce SQL usage for searching, but this service is not configured for SQL.")
 							.build();
 			}
-			List<String> result;
+			if (filteredParams.containsKey("retrieverecords")) {
+				retrieveRecords = Boolean.parseBoolean(filteredParams.getFirst("retrieverecords"));
+				filteredParams.remove("retrieverecords");
+			}
+			Object result;
 			// If available, search via solr takes precedence over SQL unless
 			// enforced otherwise
 			if (configuration.useSolr() && !enforceSql) {
 				result = genericSolrSearch(filteredParams, limit);
 			} else {
-				result = genericSqlSearch(filteredParams, limit);
+				result = genericSqlSearch(filteredParams, limit, page, retrieveRecords);
 			}
 			return Response.ok(result, MediaType.APPLICATION_JSON).build();
 		} catch (SQLException exc) {
@@ -176,13 +189,16 @@ public class HandleReverseLookupResource {
 	 * @param parameters A map of all search fields. Should not contain special parameters such as 'limit' or 'enforcesql'.
 	 * @param limit
 	 *            SQL query limit. May be null.
+	 * @param page
+	 *            SQL query offset, skips the given number of results. May be null.
+	 * @param retrieveRecords
+	 *            Set to true to not only retrieve Handle names, but also full records content.
 	 * @return A list of Handles.
 	 * @throws SQLException
 	 */
-	public List<String> genericSqlSearch(MultivaluedMap<String, String> parameters, Integer limit) throws SQLException {
-		List<String> results = new LinkedList<String>();
+	public Object genericSqlSearch(MultivaluedMap<String, String> parameters, Integer limit, Integer page, boolean retrieveRecords) throws SQLException {
 		if (parameters.isEmpty()) {
-			return results;
+			return new LinkedList<String>();
 		}
 		ReverseLookupConfig config = ReverseLookupConfig.getInstance();
 		DataSource dataSource = config.getHandleDataSource();
@@ -196,7 +212,7 @@ public class HandleReverseLookupResource {
 			if (parameters.size() == 1) {
 				// Simple query, no joins
 				String key = parameters.keySet().iterator().next();
-				makeSearchSubquery(key, parameters.get(key), sb, stringParams);
+				makeSearchSubquery(key, parameters.get(key), sb, stringParams, limit, page, retrieveRecords);
 			} else {
 				// Search for Handles with several type entries to be checked
 				// using multiple inner joins
@@ -206,15 +222,17 @@ public class HandleReverseLookupResource {
 					if (tableIndex > 1)
 						sb.append(" inner join ");
 					sb.append("(");
-					makeSearchSubquery(key, parameters.get(key), sb, stringParams);
+					makeSearchSubquery(key, parameters.get(key), sb, stringParams, null, null, false);
 					sb.append(") table_" + tableIndex);
 					if (tableIndex > 1)
 						sb.append(" on table_" + (tableIndex - 1) + ".handle=table_" + tableIndex + ".handle");
 					tableIndex++;
 				}
+				if (limit != null)
+					sb.append(" limit " + limit);
+				if (page != null)
+					sb.append(" offset " + page);
 			}
-			if (limit != null)
-				sb.append(" limit " + limit);
 			// Now fill statement with stringParams
 			statement = connection.prepareStatement(sb.toString());
 			Iterator<String> paramsIter = stringParams.iterator();
@@ -225,10 +243,33 @@ public class HandleReverseLookupResource {
 			}
 			// Execute statement
 			resultSet = statement.executeQuery();
-			while (resultSet.next()) {
-				results.add(resultSet.getString(1));
+			if (retrieveRecords) {
+				// Result will be a list of map, because we have to store multiple values
+				HashMap<String, LinkedList<HashMap<String, String>>> results = new HashMap<String, LinkedList<HashMap<String, String>>>();
+				while (resultSet.next()) {
+					HashMap<String, String> pair = new HashMap<>();
+					pair.put("type", resultSet.getString(2));
+					pair.put("value", resultSet.getString(3));
+					LinkedList<HashMap<String, String>> handlevalues = results.get(resultSet.getString(1));
+					if (handlevalues == null) {
+						LinkedList<HashMap<String, String>> list = new LinkedList<>();
+						list.add(pair);
+						results.put(resultSet.getString(1), list);
+					}
+					else {
+						handlevalues.add(pair);
+					}
+				}
+				return results;
 			}
-			return results;
+			else {
+				// Result will be a simple list of Handle names
+				List<String> results = new LinkedList<String>();
+				while (resultSet.next()) {
+					results.add(resultSet.getString(1));
+				}
+				return results;
+			}
 		} finally {
 			if (resultSet != null) {
 				try {
@@ -254,8 +295,13 @@ public class HandleReverseLookupResource {
 		}
 	}
 
-	private void makeSearchSubquery(String key, List<String> list, StringBuffer sb, List<String> stringParams) {
-		sb.append("select handle from handles where type=?");
+	private void makeSearchSubquery(String key, List<String> list, StringBuffer sb, List<String> stringParams, Integer limit, Integer page, boolean retrieveRecords) {
+		if (retrieveRecords) {
+			sb.append("select handle, type, data from handles as allvalues inner join (select handle as subhandle from handles where type=?");
+		}
+		else {
+			sb.append("select handle from handles where type=?");
+		}
 		stringParams.add(key);
 		for (String value : list) {
 			String modvalue = value;
@@ -267,6 +313,12 @@ public class HandleReverseLookupResource {
 			}
 			stringParams.add(modvalue);
 		}
+		if (limit != null)
+			sb.append(" limit " + limit);
+		if (page != null)
+			sb.append(" offset " + page);
+		if (retrieveRecords)
+			sb.append(") subtable on allvalues.handle=subtable.subhandle"); // close sub-select; limit/page be applied to it rather than the outer select
 	}
 
 }
