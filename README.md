@@ -84,9 +84,9 @@ https://your.server/hrls/handles?URL=*
 
 And a curl example would be:
 
-curl -u "<username>:<password>" https://your.server:port/hrls/ping
+curl -u "username:password" https://your.server:port/hrls/ping
 
-curl -u "<username>:<password>" https://your.server:port/hrls/handles?URL=*
+curl -u "username:password" https://your.server:port/hrls/handles?URL=*
 
 To retrieve full Handle records, set the optional "retrieverecords" parameter to true:
 
