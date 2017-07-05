@@ -50,7 +50,7 @@ public class HandleReverseLookupResource {
 	 * 
 	 * All parameters are treated as such search fields except for a few special ones:
 	 * <ul>
-	 * <li><em>limit:</em> Limits the maximum number of results to return. The default limit for Solr queries is 1000; there is no default for SQL. Limits for Solr larger than 1000 can be specified.</li>
+	 * <li><em>limit:</em> Limits the maximum number of results to return. The default limit for Solr queries is 1000; The max limit for SQL is 100000. The default is 1000 SQL. Limits for Solr larger than 1000 can be specified.</li>
 	 * <li><em>page (SQL only):</em> Skip the given number of results, enabling pagination if combined with a limit. Limits the maximum number of results to return.</li>
 	 * <li><em>enforcesql:</em> If both SQL and Solr are configured for searching, Solr takes precedence by default. If enforcesql is set to true, SQL will be used instead of Solr.
 	 * <li><em>retrieverecords (SQL only):</em> Do not only return Handle names, but full record contents. Note: This only works if only one search field is given.</li>
@@ -188,11 +188,7 @@ public class HandleReverseLookupResource {
 	 * 
 	 * @param parameters A map of all search fields. Should not contain special parameters such as 'limit' or 'enforcesql'.
 	 * @param limit
-<<<<<<< HEAD
-	 *            SQL query limit. May be null, but will then be set to 1000 as default. Can never be higher than 10000.
-=======
-	 *            SQL query limit. May be null.
->>>>>>> master
+	 *            SQL query limit. May be null, but will then be set to 1000 as default. Can never be higher than 100000.
 	 * @param page
 	 *            SQL query offset, skips the given number of results. May be null.
 	 * @param retrieveRecords
@@ -213,6 +209,9 @@ public class HandleReverseLookupResource {
 			connection = dataSource.getConnection();
 			StringBuffer sb = new StringBuffer();
 			List<String> stringParams = new LinkedList<String>();
+			// set limit to default of 1000 if nothing is set 
+			if (limit == null)
+				limit = 1000;
 			if (parameters.size() == 1) {
 				// Simple query, no joins
 				String key = parameters.keySet().iterator().next();
@@ -232,11 +231,9 @@ public class HandleReverseLookupResource {
 						sb.append(" on table_" + (tableIndex - 1) + ".handle=table_" + tableIndex + ".handle");
 					tableIndex++;
 				}
-				if (limit != null)
-					sb.append(" limit " + Math.min(limit, 100000));
-				else sb.append(" limit 1000");
+				sb.append(" limit " + Math.min(limit, 100000));
 				if (page != null)
-					sb.append(" offset " + page);
+					sb.append(" offset " + page*limit);
 			}
 			// Now fill statement with stringParams
 			statement = connection.prepareStatement(sb.toString());
@@ -319,9 +316,9 @@ public class HandleReverseLookupResource {
 			stringParams.add(modvalue);
 		}
 		if (limit != null)
-			sb.append(" limit " + limit);
+			sb.append(" limit " + Math.min(limit, 100000));
 		if (page != null)
-			sb.append(" offset " + page);
+			sb.append(" offset " + page*limit);
 		if (retrieveRecords)
 			sb.append(") subtable on allvalues.handle=subtable.subhandle"); // close sub-select; limit/page be applied to it rather than the outer select
 	}
