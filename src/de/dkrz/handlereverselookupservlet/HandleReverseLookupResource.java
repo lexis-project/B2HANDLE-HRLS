@@ -188,11 +188,7 @@ public class HandleReverseLookupResource {
 	 * 
 	 * @param parameters A map of all search fields. Should not contain special parameters such as 'limit' or 'enforcesql'.
 	 * @param limit
-<<<<<<< HEAD
 	 *            SQL query limit. May be null, but will then be set to 1000 as default. Can never be higher than 100000.
-=======
-	 *            SQL query limit. May be null.
->>>>>>> master
 	 * @param page
 	 *            SQL query offset, skips the given number of results. May be null.
 	 * @param retrieveRecords

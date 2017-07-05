@@ -53,6 +53,7 @@ useSolr = false
 sqlConnectionString = jdbc\:\mysql\://localhost\:3306/database_name?autoReconnect=true
 sqlUsername = user
 sqlPassword = password
+jdbcDriverClassName = com.mysql.jdbc.Driver
 ```
 
 Note the escaping of colon characters in the the sqlConnectionString. 
