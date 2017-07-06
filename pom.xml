@@ -5,7 +5,7 @@
   <version>1.0.1</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
-    <finalName>reverselookupservlet</finalName>
+    <finalName>reverselookupservlet-${project.version}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
