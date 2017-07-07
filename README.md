@@ -99,6 +99,6 @@ To retrieve full Handle records, set the optional "retrieverecords" parameter to
 
 https://your.server:port/hrls/handles?URL=*&retrieverecords=true
 
-**NOTE:** `retrieverecords=true` with a limit of 100000 might give a server error: ~HTTP ERROR 500~. The handle logfile shows ~java.lang.OutOfMemoryError: GC overhead limit exceeded~. To prevent this increase the memory for the handle server during startup. An example is ~-Xmx2G~.
+**NOTE:** `retrieverecords=true` with a limit of 100000 might give a server error: _HTTP ERROR 500_. The handle logfile shows _java.lang.OutOfMemoryError: GC overhead limit exceeded_. To prevent this increase the memory for the handle server during startup. An example is _-Xmx2G_.
 
 **NOTE:** The maximum of limit is 100000. De default of limit is 1000. By default it will only show 1000 matches when searching.
