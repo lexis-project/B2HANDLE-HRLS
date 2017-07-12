@@ -91,6 +91,12 @@ public class HandleReverseLookupResource {
 				retrieveRecords = Boolean.parseBoolean(filteredParams.getFirst("retrieverecords"));
 				filteredParams.remove("retrieverecords");
 			}
+			// Deny searching for HS_SECKEY (irrelevant of case, thus we have to loop)
+			for (String key : filteredParams.keySet()) {
+				if (key.equalsIgnoreCase("HS_SECKEY")) {
+					return Response.serverError().entity("Searching via HS_SECKEY entries is not allowed!").build();
+				}
+			}
 			Object result;
 			// If available, search via solr takes precedence over SQL unless
 			// enforced otherwise
@@ -320,7 +326,7 @@ public class HandleReverseLookupResource {
 		if (page != null)
 			sb.append(" offset " + page*limit);
 		if (retrieveRecords)
-			sb.append(") subtable on allvalues.handle=subtable.subhandle"); // close sub-select; limit/page be applied to it rather than the outer select
+			sb.append(") subtable on allvalues.handle=subtable.subhandle where type != \"HS_SECKEY\""); // close sub-select; limit/page be applied to it rather than the outer select
 	}
 
 }
