@@ -69,8 +69,30 @@ class HrlsIntegrationTests(unittest.TestCase):
             'ping hrls returns unexpected response')
 
     def test_search_handle_by_non_existing_key_value(self):
-        """Test that search by non existing key-value returns no matching handle."""
+        """Test that search by ['URL=my_unknown_handle_url'] returns no matching handle."""
         search_array=['URL=my_unknown_handle_url']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles', self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 200,
+            'search hrls by non existing url key returns unexpected status')
+        self.assertEqual(
+            search_result.content, '[]',
+            'search handle by non existing url key returns unexpected response')
+
+    def test_search_handle_by_non_existing_and_existing_key_value(self):
+        """Test that search by ['URL=my_unknown_handle_url','HS_ADMIN=*'] returns no matching handle."""
+        search_array=['URL=my_unknown_handle_url','HS_ADMIN=*']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles', self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 200,
+            'search hrls by non existing url key returns unexpected status')
+        self.assertEqual(
+            search_result.content, '[]',
+            'search handle by non existing url key returns unexpected response')
+
+    def test_search_handle_by_existing_and_non_existing_key_value(self):
+        """Test that search by ['HS_ADMIN=*','URL=my_unknown_handle_url'] returns no matching handle."""
+        search_array=['HS_ADMIN=*','URL=my_unknown_handle_url']
         search_result = execute_curl(self.handle_server_url+'/hrls/handles', self.username, self.password, search_array, self.https_verify)
         self.assertEqual(
             search_result.status_code, 200,
