@@ -413,6 +413,10 @@ class HrlsIntegrationTests(unittest.TestCase):
         self.assertEqual(
             search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_000001'][3]['type'], 'HS_ADMIN',
             'search handle by existing key value returns unexpected response')
+        self.assertEqual(
+            len(search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_000001']), 4,
+            'search handle by existing key value returns unexpected response')
+
 
     def test_search_handle_by_existing_key_value_retrieverecords_2(self):
         """Test that search by ['URL=http://www.test_hrls_check.com/00000*','retrieverecords=true','limit=9'] returns all records for those handles."""
@@ -445,6 +449,9 @@ class HrlsIntegrationTests(unittest.TestCase):
             self.assertEqual(
                 search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][3]['type'], 'HS_ADMIN',
                 'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                len(search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)]), 4,
+                'search handle by existing key value returns unexpected response')
     
     def test_search_handle_by_existing_key_value_retrieverecords_3(self):
         """Test that search by ['URL=http://www.test_hrls_check.com/*','retrieverecords=true','limit=100000'] returns all records for those handles."""
@@ -476,6 +483,9 @@ class HrlsIntegrationTests(unittest.TestCase):
                 'search handle by existing key value returns unexpected response')
             self.assertEqual(
                 search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][3]['type'], 'HS_ADMIN',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                len(search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)]), 4,
                 'search handle by existing key value returns unexpected response')
     
     
