@@ -384,3 +384,98 @@ class HrlsIntegrationTests(unittest.TestCase):
             set1, set2,
             'search handle by existing key value returns unexpected response')
 
+    def test_search_handle_by_existing_key_value_retrieverecords_1(self):
+        """Test that search by ['URL=http://www.test_hrls_check.com/000001','retrieverecords=true'] returns all records for that handle."""
+        search_array=['URL=http://www.test_hrls_check.com/000001','retrieverecords=true']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles', self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 200,
+            'search hrls by existing key value returns unexpected status')
+        search_result_list = json.loads(search_result.content)
+        self.assertEqual(
+            search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_000001'][0]['type'], 'URL',
+            'search handle by existing key value returns unexpected response')
+        self.assertEqual(
+            search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_000001'][0]['value'], 'http://www.test_hrls_check.com/000001',
+            'search handle by existing key value returns unexpected response')
+        self.assertEqual(
+            search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_000001'][1]['type'], 'EMAIL',
+            'search handle by existing key value returns unexpected response')
+        self.assertEqual(
+            search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_000001'][1]['value'], 'test_hrls_000001@test_hrls_check.com',
+            'search handle by existing key value returns unexpected response')
+        self.assertEqual(
+            search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_000001'][2]['type'], 'TEXT',
+            'search handle by existing key value returns unexpected response')
+        self.assertEqual(
+            search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_000001'][2]['value'], 'This handle is used to check if the hrls is functioning',
+            'search handle by existing key value returns unexpected response')
+        self.assertEqual(
+            search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_000001'][3]['type'], 'HS_ADMIN',
+            'search handle by existing key value returns unexpected response')
+
+    def test_search_handle_by_existing_key_value_retrieverecords_2(self):
+        """Test that search by ['URL=http://www.test_hrls_check.com/00000*','retrieverecords=true','limit=9'] returns all records for those handles."""
+        search_array=['URL=http://www.test_hrls_check.com/00000*','retrieverecords=true','limit=9']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles', self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 200,
+            'search hrls by existing key value returns unexpected status')
+        search_result_list = json.loads(search_result.content)
+        for i in xrange(1, 10):
+            counter = "%06d" % i
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][0]['type'], 'URL',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][0]['value'], 'http://www.test_hrls_check.com/'+str(counter),
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][1]['type'], 'EMAIL',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][1]['value'], 'test_hrls_'+str(counter)+'@test_hrls_check.com',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][2]['type'], 'TEXT',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][2]['value'], 'This handle is used to check if the hrls is functioning',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][3]['type'], 'HS_ADMIN',
+                'search handle by existing key value returns unexpected response')
+    
+    def test_search_handle_by_existing_key_value_retrieverecords_3(self):
+        """Test that search by ['URL=http://www.test_hrls_check.com/*','retrieverecords=true','limit=100000'] returns all records for those handles."""
+        search_array=['URL=http://www.test_hrls_check.com/*','retrieverecords=true','limit=100000']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles', self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 200,
+            'search hrls by existing key value returns unexpected status')
+        search_result_list = json.loads(search_result.content)
+        for i in xrange( 99999, 100001):
+            counter = "%06d" % i
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][0]['type'], 'URL',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][0]['value'], 'http://www.test_hrls_check.com/'+str(counter),
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][1]['type'], 'EMAIL',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][1]['value'], 'test_hrls_'+str(counter)+'@test_hrls_check.com',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][2]['type'], 'TEXT',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][2]['value'], 'This handle is used to check if the hrls is functioning',
+                'search handle by existing key value returns unexpected response')
+            self.assertEqual(
+                search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)][3]['type'], 'HS_ADMIN',
+                'search handle by existing key value returns unexpected response')
+    
+    
