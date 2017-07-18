@@ -487,5 +487,15 @@ class HrlsIntegrationTests(unittest.TestCase):
             self.assertEqual(
                 len(search_result_list[str(self.prefix)+'/HRLS_CHECK_HANDLE_'+str(counter)]), 4,
                 'search handle by existing key value returns unexpected response')
-    
-    
+
+    def test_search_handle_by_existing_key_value_retrieverecords_except_hs_seckey_1(self):
+        """Test that search by ['URL=http://www.test_hrls_check.com/000001','retrieverecords=true'] returns all records for that handle except HS_SECKEY."""
+        search_array=['URL=http://www.test_hrls_check.com/000001','retrieverecords=true']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles', self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 200,
+            'search hrls by existing key value returns unexpected status')
+        self.assertNotIn(
+            'HS_SECKEY', search_result.content,
+            'search handle by existing key value gives back HS_SECKEY response')
+
