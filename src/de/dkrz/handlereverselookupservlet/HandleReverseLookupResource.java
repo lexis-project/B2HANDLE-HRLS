@@ -44,22 +44,6 @@ public class HandleReverseLookupResource {
 		return "OK\n";
 	}
 	
-	/**
-	 * Searches over Handles via their record information. The method will return a list of all Handles whose records match all of the supplied parameters.
-	 * The parameters are not a fixed set; the usual 'URL' field is a good example as this establishes what is usually understood as Handle reverse-lookup: Get to a Handle given a target URL. 
-	 * However, any fields that are available from the Handle SQL storage or a Solr index can be used.
-	 * 
-	 * All parameters are treated as such search fields except for a few special ones:
-	 * <ul>
-	 * <li><em>limit:</em> Limits the maximum number of results to return. The default limit for Solr queries is 1000; The max limit for SQL is 100000. The default is 1000 SQL. Limits for Solr larger than 1000 can be specified.</li>
-	 * <li><em>page (SQL only):</em> Skip the given number of results, enabling pagination if combined with a limit. Limits the maximum number of results to return.</li>
-	 * <li><em>enforcesql:</em> If both SQL and Solr are configured for searching, Solr takes precedence by default. If enforcesql is set to true, SQL will be used instead of Solr.
-	 * <li><em>retrieverecords (SQL only):</em> Do not only return Handle names, but full record contents. Note: This only works if only one search field is given.</li>
-	 * </dl>
-	 * 
-	 * @param info A UriInfo object carrying, among other things, the URL parameters. See above for explanations.
-	 * @return A simple list of Handles (just Handle names, no record excerpts, even not for the fields searched).
-	 */
 	@GET
 	@Path("handles")
 	@Produces("application/json")
@@ -78,6 +62,22 @@ public class HandleReverseLookupResource {
 		return result;
 	}
 
+	/**
+	 * Searches over Handles via their record information. The method will return a list of all Handles whose records match all of the supplied parameters.
+	 * The parameters are not a fixed set; the usual 'URL' field is a good example as this establishes what is usually understood as Handle reverse-lookup: Get to a Handle given a target URL. 
+	 * However, any fields that are available from the Handle SQL storage or a Solr index can be used.
+	 * 
+	 * All parameters are treated as such search fields except for a few special ones:
+	 * <ul>
+	 * <li><em>limit:</em> Limits the maximum number of results to return. The default limit for Solr queries is 1000; The max limit for SQL is 100000. The default is 1000 SQL. Limits for Solr larger than 1000 can be specified.</li>
+	 * <li><em>page (SQL only):</em> Skip the given number of results, enabling pagination if combined with a limit. Limits the maximum number of results to return.</li>
+	 * <li><em>enforcesql:</em> If both SQL and Solr are configured for searching, Solr takes precedence by default. If enforcesql is set to true, SQL will be used instead of Solr.
+	 * <li><em>retrieverecords (SQL only):</em> Do not only return Handle names, but full record contents. Note: This only works if only one search field is given.</li>
+	 * </dl>
+	 * 
+	 * @param info A UriInfo object carrying, among other things, the URL parameters. See above for explanations.
+	 * @return A simple list of Handles (just Handle names, no record excerpts, even not for the fields searched).
+	 */
 	public Response search(@PathParam("prefix") String prefix, @Context UriInfo info) {
 		MultivaluedMap<String, String> params = info.getQueryParameters();
 		ReverseLookupConfig configuration = ReverseLookupConfig.getInstance();
