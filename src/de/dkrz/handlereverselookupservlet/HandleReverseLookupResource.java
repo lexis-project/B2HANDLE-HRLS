@@ -14,6 +14,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -62,7 +63,22 @@ public class HandleReverseLookupResource {
 	@GET
 	@Path("handles")
 	@Produces("application/json")
-	public Response search(@Context UriInfo info) {
+	public Response searchHandles(@Context UriInfo info) {
+		Response result;
+		result = search(null, info);
+		return result;
+	}
+
+	@GET
+	@Path("handles/{prefix}")
+	@Produces("application/json")
+	public Response searchPrefix(@PathParam("prefix") String prefix, @Context UriInfo info) {
+		Response result;
+		result = search(prefix, info);
+		return result;
+	}
+
+	public Response search(@PathParam("prefix") String prefix, @Context UriInfo info) {
 		MultivaluedMap<String, String> params = info.getQueryParameters();
 		ReverseLookupConfig configuration = ReverseLookupConfig.getInstance();
 		Integer limit = null;
@@ -103,7 +119,7 @@ public class HandleReverseLookupResource {
 			if (configuration.useSolr() && !enforceSql) {
 				result = genericSolrSearch(filteredParams, limit);
 			} else {
-				result = genericSqlSearch(filteredParams, limit, page, retrieveRecords);
+				result = genericSqlSearch(prefix, filteredParams, limit, page, retrieveRecords);
 			}
 			return Response.ok(result, MediaType.APPLICATION_JSON).build();
 		} catch (SQLException exc) {
@@ -202,7 +218,7 @@ public class HandleReverseLookupResource {
 	 * @return A list of Handles.
 	 * @throws SQLException
 	 */
-	public Object genericSqlSearch(MultivaluedMap<String, String> parameters, Integer limit, Integer page, boolean retrieveRecords) throws SQLException {
+	public Object genericSqlSearch(String prefix, MultivaluedMap<String, String> parameters, Integer limit, Integer page, boolean retrieveRecords) throws SQLException {
 		if (parameters.isEmpty()) {
 			return new LinkedList<String>();
 		}
@@ -221,7 +237,7 @@ public class HandleReverseLookupResource {
 			if (parameters.size() == 1) {
 				// Simple query, no joins
 				String key = parameters.keySet().iterator().next();
-				makeSearchSubquery(key, parameters.get(key), sb, stringParams, limit, page, retrieveRecords);
+				makeSearchSubquery(prefix, key, parameters.get(key), sb, stringParams, limit, page, retrieveRecords);
 			} else {
 				// Search for Handles with several type entries to be checked
 				// using multiple inner joins
@@ -231,7 +247,7 @@ public class HandleReverseLookupResource {
 					if (tableIndex > 1)
 						sb.append(" inner join ");
 					sb.append("(");
-					makeSearchSubquery(key, parameters.get(key), sb, stringParams, null, null, false);
+					makeSearchSubquery(prefix, key, parameters.get(key), sb, stringParams, null, null, false);
 					sb.append(") table_" + tableIndex);
 					if (tableIndex > 1)
 						sb.append(" on table_" + (tableIndex - 1) + ".handle=table_" + tableIndex + ".handle");
@@ -303,12 +319,18 @@ public class HandleReverseLookupResource {
 		}
 	}
 
-	private void makeSearchSubquery(String key, List<String> list, StringBuffer sb, List<String> stringParams, Integer limit, Integer page, boolean retrieveRecords) {
+	private void makeSearchSubquery(String prefix, String key, List<String> list, StringBuffer sb, List<String> stringParams, Integer limit, Integer page, boolean retrieveRecords) {
 		if (retrieveRecords) {
 			sb.append("select handle, type, data from handles as allvalues inner join (select handle as subhandle from handles where type=?");
 		}
 		else {
-			sb.append("select handle from handles where type=?");
+			if (prefix != null) {
+				sb.append("select handle from handles where handle like '" + prefix + "%'");
+				sb.append(" and type=?");
+			}
+			else {
+				sb.append("select handle from handles where type=?");
+			}
 		}
 		stringParams.add(key);
 		for (String value : list) {
