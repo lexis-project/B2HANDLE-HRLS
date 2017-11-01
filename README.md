@@ -89,6 +89,8 @@ curl -u "username:password" https://your.server:port/hrls/ping
 
 curl -u "username:password" https://your.server:port/hrls/handles?URL=*
 
+curl -u "username:password" https://your.server:port/hrls/handles/11112?URL=*
+
 curl -u "username:password" https://your.server:port/hrls/handles?URL=http://www.test.com&EMAIL=mail@test.com
 
 curl -u "username:password" https://your.server:port/hrls/handles?URL=*&limit=20
