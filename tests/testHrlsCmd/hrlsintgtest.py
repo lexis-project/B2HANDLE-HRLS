@@ -499,3 +499,62 @@ class HrlsIntegrationTests(unittest.TestCase):
             'HS_SECKEY', search_result.content,
             'search handle by existing key value gives back HS_SECKEY response')
 
+    def test_search_handle_by_prefix_existing_key_value_1(self):
+        """Test that search by ['prefix','URL=http://www.test_hrls_check.com/*'] returns 1000 handles."""
+        limit = 1000
+        search_array=['URL=http://www.test_hrls_check.com/*']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles/'+self.prefix, self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 200,
+            'search hrls by existing prefix,key value returns unexpected status')
+        search_result_list = json.loads(search_result.content)
+        json_check_list = []
+        for x in xrange(1, limit+1):
+            counter = "%06d" % x
+            json_check_list.append(self.prefix+'/HRLS_CHECK_HANDLE_'+counter)
+        set1 = set(search_result_list)
+        set2 = set(json_check_list)
+        self.assertEqual(
+            set1, set2,
+            'search handle by prefix,existing key value returns unexpected response')
+
+    def test_search_handle_by_prefix_existing_key_value_2(self):
+        """Test that search by ['prefix;xyz','URL=http://www.test_hrls_check.com/*'] returns 1000 handles."""
+        limit = 1000
+        search_array=['URL=http://www.test_hrls_check.com/*']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles/'+self.prefix+';xyz', self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 200,
+            'search hrls by existing prefix;xyz,key value returns unexpected status')
+        search_result_list = json.loads(search_result.content)
+        json_check_list = []
+        for x in xrange(1, limit+1):
+            counter = "%06d" % x
+            json_check_list.append(self.prefix+'/HRLS_CHECK_HANDLE_'+counter)
+        set1 = set(search_result_list)
+        set2 = set(json_check_list)
+        self.assertEqual(
+            set1, set2,
+            'search handle by prefix;xyz,existing key value returns unexpected response')
+
+    def test_search_handle_by_prefix_existing_key_value_3(self):
+        """Test that search by ['prefixi','URL=http://www.test_hrls_check.com/*'] returns no handles."""
+        limit = 1000
+        search_array=['URL=http://www.test_hrls_check.com/*']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles/'+self.prefix+'i', self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 200,
+            'search hrls by existing prefixi,key value returns unexpected status')
+        self.assertEqual(
+            search_result.content, '[]',
+            'search handle by prefixi,existing key value returns unexpected response')
+
+    def test_search_handle_by_prefix_existing_key_value_4(self):
+        """Test that search by ['prefix i','URL=http://www.test_hrls_check.com/*'] returns error."""
+        limit = 1000
+        search_array=['URL=http://www.test_hrls_check.com/*']
+        search_result = execute_curl(self.handle_server_url+'/hrls/handles/'+self.prefix+' i', self.username, self.password, search_array, self.https_verify)
+        self.assertEqual(
+            search_result.status_code, 404,
+            'search hrls by existing prefix i,key value returns unexpected status')
+
