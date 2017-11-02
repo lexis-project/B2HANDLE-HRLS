@@ -54,7 +54,7 @@ public class HandleReverseLookupResource {
 	}
 
 	@GET
-	@Path("handles/{prefix}")
+	@Path("handles/{prefix: \\d{2}[0-9a-zA-Z.]*}")
 	@Produces("application/json")
 	public Response searchPrefix(@PathParam("prefix") String prefix, @Context UriInfo info) {
 		Response result;
