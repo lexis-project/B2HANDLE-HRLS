@@ -1,6 +1,6 @@
 # B2HANDLE-HandleReverseLookupServlet
 
-B2HANDLE-HRLS provides a Java servlet that will enable reverse-lookup and searching against local a Handle server installation with SQL storage.
+B2HANDLE-HRLS provides a Java servlet that will enable reverse-lookup and searching against a local Handle server installation with SQL storage.
 
 ## How to build
 
@@ -83,12 +83,26 @@ To check whether the actual reverse lookup works, create some Handles on the ser
 
 https://your.server/hrls/handles?URL=*
 
-And a curl example would be:
+And some curl examples are:
 
 curl -u "username:password" https://your.server:port/hrls/ping
 
 curl -u "username:password" https://your.server:port/hrls/handles?URL=*
 
+curl -u "username:password" https://your.server:port/hrls/handles/11112?URL=*
+
+curl -u "username:password" https://your.server:port/hrls/handles?URL=http://www.test.com&EMAIL=mail@test.com
+
+curl -u "username:password" https://your.server:port/hrls/handles?URL=*&limit=20
+
+curl -u "username:password" https://your.server:port/hrls/handles?URL=*&limit=20&page=0
+
 To retrieve full Handle records, set the optional "retrieverecords" parameter to true:
 
 https://your.server:port/hrls/handles?URL=*&retrieverecords=true
+
+**NOTE:** Retrieving records will not decode HS_ADMIN record fields.
+
+**NOTE:** `retrieverecords=true` with a limit of 100000 might give a server error: _HTTP ERROR 500_. The handle logfile shows _java.lang.OutOfMemoryError: GC overhead limit exceeded_. To prevent this increase the memory for the handle server during startup. An example is _-Xmx2G_.
+
+**NOTE:** The maximum of limit is 100000. The default of limit is 1000. By default it will only show 1000 matches when searching.

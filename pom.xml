@@ -2,10 +2,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>HandleReverseLookupServlet</groupId>
   <artifactId>HandleReverseLookupServlet</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
-    <finalName>reverselookupservlet</finalName>
+    <finalName>reverselookupservlet-${project.version}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

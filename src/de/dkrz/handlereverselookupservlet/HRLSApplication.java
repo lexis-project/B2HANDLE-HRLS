@@ -30,14 +30,20 @@ public class HRLSApplication extends Application {
 			throws ClassNotFoundException, FileNotFoundException, IOException, InvalidConfigException, SQLException {
 		// Get config from context (singleton)
 		Map<Object, Object> env = System.getProperties();
-		// Search for simple config file
+		// Search for simple config file in $HANDLE_SVR/handlereverselookupservlet.properties
 		String handleHome = System.getenv("HANDLE_SVR");
-		if (handleHome != null) {
+		if (handleHome == null) {
+			throw new InvalidConfigException("This servlet requires the HANDLE_SVR environmental variable. " +
+				"HANDLE_SRV should point to the Handle server instance's home directory, " +
+				"where its configuration files are located (e.g. '/hs/svr_1').");
+		} else {
 			File configFile = new File(handleHome+"/handlereverselookupservlet.properties");
 			if (configFile.exists()) {
 				Properties configFileProps = new Properties();
 				configFileProps.load(new FileInputStream(configFile));
 				env.putAll(configFileProps);
+			} else {
+				throw new InvalidConfigException("The servlet's configuration file " + configFile + " cannot be found!");
 			}
 		}
 		ReverseLookupConfig hrlsConfig = new ReverseLookupConfig(servletContext, env);
