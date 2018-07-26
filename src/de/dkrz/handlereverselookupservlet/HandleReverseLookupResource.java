@@ -37,6 +37,15 @@ import org.apache.solr.common.SolrDocumentList;
 public class HandleReverseLookupResource {
 
 	private static final Logger LOGGER = LogManager.getLogger(HandleReverseLookupResource.class);
+	private static final Logger REQUESTSLOGGER = LogManager.getLogger("requestsLogger");
+	
+	private ReverseLookupConfig reverseLookupConfig;
+	
+	public HandleReverseLookupResource(ReverseLookupConfig config) {
+		super();
+		this.reverseLookupConfig = config;
+		
+	}
 
 	@GET
 	@Path("ping")
@@ -79,6 +88,7 @@ public class HandleReverseLookupResource {
 	 * @return A simple list of Handles (just Handle names, no record excerpts, even not for the fields searched).
 	 */
 	public Response search(@PathParam("prefix") String prefix, @Context UriInfo info) {
+		long startTime = System.currentTimeMillis(); 
 		MultivaluedMap<String, String> params = info.getQueryParameters();
 		ReverseLookupConfig configuration = ReverseLookupConfig.getInstance();
 		Integer limit = null;
@@ -114,12 +124,27 @@ public class HandleReverseLookupResource {
 				}
 			}
 			Object result;
+			boolean resultIsEmpty = true;
 			// If available, search via solr takes precedence over SQL unless
 			// enforced otherwise
 			if (configuration.useSolr() && !enforceSql) {
 				result = genericSolrSearch(filteredParams, limit);
+				resultIsEmpty = ((List) result).isEmpty();
 			} else {
 				result = genericSqlSearch(prefix, filteredParams, limit, page, retrieveRecords);
+				if (result instanceof HashMap) {
+					resultIsEmpty = ((HashMap) result).isEmpty();
+				}
+				else if (result instanceof List) {
+					resultIsEmpty = ((List) result).isEmpty();
+				}
+			}
+			if (reverseLookupConfig.isLogAllQueries()) {
+				long duration = System.currentTimeMillis()-startTime;
+				String oknok = resultIsEmpty ? "0" : "1";
+				String q = info.getRequestUri().getPath()+info.getRequestUri().getQuery()+info.getRequestUri().getFragment();
+				// Format: <succeed_or_not> <time_taken> <username> <query>
+				REQUESTSLOGGER.trace(oknok+" "+duration+"ms "+q);
 			}
 			return Response.ok(result, MediaType.APPLICATION_JSON).build();
 		} catch (SQLException exc) {

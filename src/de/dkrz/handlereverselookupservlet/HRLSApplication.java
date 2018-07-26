@@ -51,7 +51,7 @@ public class HRLSApplication extends Application {
 		hrlsConfig.createHandleDataSource();
 		hrlsConfig.createSolrClient();
 		// Set up servlet
-		singletons.add(new HandleReverseLookupResource());
+		singletons.add(new HandleReverseLookupResource(hrlsConfig));
 	}
 
 	@Override
