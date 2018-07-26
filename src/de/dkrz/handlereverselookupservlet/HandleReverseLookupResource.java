@@ -13,15 +13,18 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,6 +40,15 @@ import org.apache.solr.common.SolrDocumentList;
 public class HandleReverseLookupResource {
 
 	private static final Logger LOGGER = LogManager.getLogger(HandleReverseLookupResource.class);
+	private static final Logger REQUESTSLOGGER = LogManager.getLogger("requestsLogger");
+	
+	private ReverseLookupConfig reverseLookupConfig;
+	
+	public HandleReverseLookupResource(ReverseLookupConfig config) {
+		super();
+		this.reverseLookupConfig = config;
+		
+	}
 
 	@GET
 	@Path("ping")
@@ -47,18 +59,18 @@ public class HandleReverseLookupResource {
 	@GET
 	@Path("handles")
 	@Produces("application/json")
-	public Response searchHandles(@Context UriInfo info) {
+	public Response searchHandles(@Context UriInfo info, @Context HttpHeaders httpHeaders) {
 		Response result;
-		result = search(null, info);
+		result = search(null, info, httpHeaders);
 		return result;
 	}
 
 	@GET
 	@Path("handles/{prefix: \\d{2}[0-9a-zA-Z.]*}")
 	@Produces("application/json")
-	public Response searchPrefix(@PathParam("prefix") String prefix, @Context UriInfo info) {
+	public Response searchPrefix(@PathParam("prefix") String prefix, @Context UriInfo info, @Context HttpHeaders httpHeaders) {
 		Response result;
-		result = search(prefix, info);
+		result = search(prefix, info, httpHeaders);
 		return result;
 	}
 
@@ -76,9 +88,11 @@ public class HandleReverseLookupResource {
 	 * </dl>
 	 * 
 	 * @param info A UriInfo object carrying, among other things, the URL parameters. See above for explanations.
+	 * @param httpHeaders A HTTPHeaders object
 	 * @return A simple list of Handles (just Handle names, no record excerpts, even not for the fields searched).
 	 */
-	public Response search(@PathParam("prefix") String prefix, @Context UriInfo info) {
+	public Response search(@PathParam("prefix") String prefix, @Context UriInfo info, @Context HttpHeaders httpHeaders) {
+		long startTime = System.currentTimeMillis(); 
 		MultivaluedMap<String, String> params = info.getQueryParameters();
 		ReverseLookupConfig configuration = ReverseLookupConfig.getInstance();
 		Integer limit = null;
@@ -114,12 +128,37 @@ public class HandleReverseLookupResource {
 				}
 			}
 			Object result;
+			boolean resultIsEmpty = true;
 			// If available, search via solr takes precedence over SQL unless
 			// enforced otherwise
 			if (configuration.useSolr() && !enforceSql) {
 				result = genericSolrSearch(filteredParams, limit);
+				resultIsEmpty = ((List) result).isEmpty();
 			} else {
 				result = genericSqlSearch(prefix, filteredParams, limit, page, retrieveRecords);
+				if (result instanceof HashMap) {
+					resultIsEmpty = ((HashMap) result).isEmpty();
+				}
+				else if (result instanceof List) {
+					resultIsEmpty = ((List) result).isEmpty();
+				}
+			}
+			if (reverseLookupConfig.isLogAllQueries()) {
+				long duration = System.currentTimeMillis()-startTime;
+				String oknok = resultIsEmpty ? "0" : "1";
+				String q = info.getRequestUri().getPath();
+				if (info.getRequestUri().getQuery() != null)
+					q = q + "?" + info.getRequestUri().getQuery();
+				if (info.getRequestUri().getFragment() != null)
+					q = q + "#" + info.getRequestUri().getFragment();
+				String authHeader = httpHeaders.getHeaderString("authorization");
+				String username = "<undefined>";
+				if ((authHeader != null) && authHeader.startsWith("Basic")) {
+					username = new String(DatatypeConverter.parseBase64Binary(authHeader.substring(5).trim()));
+					username = username.split(":", 2)[0];
+				}
+				// Format: <succeed_or_not> <time_taken> <username> <query>
+				REQUESTSLOGGER.info(oknok+" "+duration+"ms "+username+" "+q);
 			}
 			return Response.ok(result, MediaType.APPLICATION_JSON).build();
 		} catch (SQLException exc) {
