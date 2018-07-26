@@ -56,7 +56,15 @@ sqlPassword = password
 jdbcDriverClassName = com.mysql.jdbc.Driver
 ```
 
-Note the escaping of colon characters in the the sqlConnectionString. 
+Note the escaping of colon characters in the the sqlConnectionString.
+
+By default, the servlet does not log all queries. This can be enabled by including the following in the config file. The query log will be under the location {HANDLE_SVR}/logs/hrls-requests.log. 
+
+```
+logAllQueries = true
+``` 
+
+These logs will be rotated monthly and no more than 12 logs will be kept. These parameters can be overridden by customizing the log4j2.xml file contained in the war. You can specify a location for your own log4j2.xml file using a java parameter: -Dlog4j.configurationFile=path/to/log4j2.xml
 
 ### Security realm configuration file format
 
