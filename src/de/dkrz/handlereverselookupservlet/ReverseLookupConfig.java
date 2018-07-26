@@ -37,6 +37,8 @@ public class ReverseLookupConfig {
 	private String solrCollection;
 
 	private CloudSolrClient solrClient;
+	
+	private boolean logAllQueries = false;
 
 	private static String getParam(ServletContext sc, Map<Object, Object> additionalProperties, Object key,
 			boolean requiredParam) throws InvalidConfigException {
@@ -96,6 +98,7 @@ public class ReverseLookupConfig {
 		}
 		if (!(this.useSql || this.useSolr))
 			throw new InvalidConfigException("The configuration must enable at least one of 'useSolr' or 'useSql'!");
+		this.logAllQueries = getBooleanParam(servletContext, additionalProperties, "logAllQueries", false);
 		this.instance = this;
 	}
 
@@ -183,6 +186,15 @@ public class ReverseLookupConfig {
 	 */
 	public boolean useSolr() {
 		return useSolr;
+	}
+	
+	/**
+	 * Queries config param to set to true optionally to log all queries with log4j. 
+	 * 
+	 * @return true if all requests should be logged
+	 */
+	public boolean isLogAllQueries() {
+		return logAllQueries;
 	}
 
 }
