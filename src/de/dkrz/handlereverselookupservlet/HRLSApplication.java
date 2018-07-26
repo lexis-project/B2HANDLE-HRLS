@@ -29,6 +29,7 @@ public class HRLSApplication extends Application {
 	public HRLSApplication(@Context ServletContext servletContext)
 			throws ClassNotFoundException, FileNotFoundException, IOException, InvalidConfigException, SQLException {
 		// Get config from context (singleton)
+		LOGGER.info("HandleReverseLookupServlet starting...");
 		Map<Object, Object> env = System.getProperties();
 		// Search for simple config file in $HANDLE_SVR/handlereverselookupservlet.properties
 		String handleHome = System.getenv("HANDLE_SVR");
