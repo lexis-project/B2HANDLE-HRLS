@@ -66,6 +66,12 @@ logAllQueries = true
 
 These logs will be rotated monthly and no more than 12 logs will be kept. These parameters can be overridden by customizing the log4j2.xml file contained in the war. You can specify a location for your own log4j2.xml file using a java parameter: -Dlog4j.configurationFile=path/to/log4j2.xml
 
+You can also specify optionally a custom service name for the servlet. This will be used for logging purposes but does not affect interaction with the databases.
+
+```
+serviceName = MyService
+```
+
 ### Security realm configuration file format
 
 The full description is available here, under HashLoginService: http://wiki.eclipse.org/Jetty/Tutorial/Realms
