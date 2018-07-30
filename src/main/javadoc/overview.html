@@ -33,5 +33,32 @@ solrCollection = (name of your Solr collection)
 solrCloudZkHost = (Zookeeper host and port)
 </pre>
 
+<h2>Requests logging</h2>
+
+To enable logging of all requests, include the following in the <code>handlereverselookupservlet.properties</code> file:
+
+<pre>
+logAllQueries = true
+serviceName = MyHRLSService
+</pre>
+
+The serviceName is optional and will be used in each log message.<br/>
+To customize the logging output format, you can provide your own <code>log4j2.xml</code> file using a java environment parameter: <code>-Dlog4j.configurationFile=path/to/log4j2.xml</code><br/>
+The log messages contain the following information:
+<ol>
+<li> Source IP address</li>
+<li> Status code</li>
+<li> Time taken to process requests (in milliseconds)</li>
+<li> User name used to authenticate</li>
+<li> Original query (part of the URL)</li>
+</ol>
+
+The status codes are:
+<ul>
+<li>0: Query OK, but result set empty.</li>
+<li>1: Query OK and results provided.</li>
+<li>2: User tried to request HS_SECKEY information, which was denied.</li>
+<li>3: User asked to force SQL usage to answer request, but server is not configured for SQL.</li>
+</ul>
 
 </body>

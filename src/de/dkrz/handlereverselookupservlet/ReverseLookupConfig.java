@@ -39,6 +39,7 @@ public class ReverseLookupConfig {
 	private CloudSolrClient solrClient;
 	
 	private boolean logAllQueries = false;
+	private String serviceName;
 
 	private static String getParam(ServletContext sc, Map<Object, Object> additionalProperties, Object key,
 			boolean requiredParam) throws InvalidConfigException {
@@ -99,6 +100,7 @@ public class ReverseLookupConfig {
 		if (!(this.useSql || this.useSolr))
 			throw new InvalidConfigException("The configuration must enable at least one of 'useSolr' or 'useSql'!");
 		this.logAllQueries = getBooleanParam(servletContext, additionalProperties, "logAllQueries", false);
+		this.serviceName = getParam(servletContext, additionalProperties, "serviceName", false);
 		this.instance = this;
 	}
 
@@ -195,6 +197,14 @@ public class ReverseLookupConfig {
 	 */
 	public boolean isLogAllQueries() {
 		return logAllQueries;
+	}
+	
+	/**
+	 * 
+	 * @return A freely defined service name given by the administrator.
+	 */
+	public String getServiceName() {
+		return serviceName;
 	}
 
 }
