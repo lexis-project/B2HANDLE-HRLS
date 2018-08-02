@@ -2,10 +2,10 @@
 <Configuration status="INFO">
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%c] %-5level %logger{36} - %msg%n" />
+			<PatternLayout pattern="%d{DEFAULT} [%c] %-5level %logger{36} - %msg%n" />
 		</Console>
 		<RollingFile name="requestsLogger" fileName="${env:HANDLE_SVR}/logs/hrls-requests.log" filePattern="${env:HANDLE_SVR}/logs/hrls-requests.log-%d{yyyy-MM}" createOnDemand="true">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%c] - %msg%n" />
+			<PatternLayout pattern="%d{DEFAULT} [%c] - %msg%n" />
 			<Policies>
 				<TimeBasedTriggeringPolicy />
 			</Policies>
