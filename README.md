@@ -6,6 +6,7 @@ B2HANDLE-HRLS provides a Java servlet that will enable reverse-lookup and search
 
 This is a Maven-enabled project. To build a .war file, install [Apache Maven](https://maven.apache.org) and then call:
 ```
+$ mvn clean
 $ mvn compile
 $ mvn war:war
 ```
