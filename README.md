@@ -6,12 +6,13 @@ B2HANDLE-HRLS provides a Java servlet that will enable reverse-lookup and search
 
 This is a Maven-enabled project. To build a .war file, install [Apache Maven](https://maven.apache.org) and then call:
 ```
+$ mvn clean
 $ mvn compile
 $ mvn war:war
 ```
 The .war file will be under subdirectory "target". 
 
-## How to deploy (using embedded Handle System v8 Jetty)
+## How to deploy (using embedded Handle System v8 (or higher) Jetty)
 
 To deploy the servlet .war in the embedded jetty, copy it to your-instance-directory/webapps.
 The servlet also needs configuration. Most importantly, the servlet requires an environmental variable **HANDLE_SVR** which should point to the Handle server instance's home directory from which the servlet will load its configuration file.

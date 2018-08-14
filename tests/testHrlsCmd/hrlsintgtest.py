@@ -33,12 +33,7 @@ def execute_curl(url, username, password, search_list=None, search_verify=None )
         url=url+"?"+'&'.join(search_list)
         #print url
 
-    if search_verify == 'True' or search_verify is None:
-        r = requests.get(url, auth=auth)
-    elif search_verify == 'False':
-        r = requests.get(url, auth=auth, verify=False)
-    else:
-        r = requests.get(url, auth=auth, verify=search_verify)
+    r = requests.get(url, auth=auth, verify=search_verify)
     return r
 
 
@@ -51,7 +46,9 @@ class HrlsIntegrationTests(unittest.TestCase):
         self.prefix = jsonfilecontent.pop('prefix')
         self.username = jsonfilecontent.pop('reverselookup_username')
         self.password = jsonfilecontent.pop('reverselookup_password')
-        self.https_verify = jsonfilecontent.pop('HTTPS_verify')
+        self.https_verify = jsonfilecontent.pop('HTTPS_verify', 'True') == 'True'
+        if not self.https_verify:
+            requests.packages.urllib3.disable_warnings() 
  
 
     def tearDown(self):
@@ -459,7 +456,7 @@ class HrlsIntegrationTests(unittest.TestCase):
         search_result = execute_curl(self.handle_server_url+'/hrls/handles', self.username, self.password, search_array, self.https_verify)
         self.assertEqual(
             search_result.status_code, 200,
-            'search hrls by existing key value returns unexpected status')
+            'search hrls by existing key value returns unexpected status: %s' % search_result.status_code)
         search_result_list = json.loads(search_result.content)
         for i in xrange( 99999, 100001):
             counter = "%06d" % i
@@ -557,4 +554,7 @@ class HrlsIntegrationTests(unittest.TestCase):
         self.assertEqual(
             search_result.status_code, 404,
             'search hrls by existing prefix i,key value returns unexpected status')
+        
 
+if __name__ == "__main__":
+    unittest.main()

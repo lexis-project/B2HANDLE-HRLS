@@ -4,12 +4,12 @@
 		<Console name="Console" target="SYSTEM_OUT">
 			<PatternLayout pattern="%d{DEFAULT} [%c] %-5level %logger{36} - %msg%n" />
 		</Console>
-		<RollingFile name="requestsLogger" fileName="${env:HANDLE_SVR}/logs/hrls-requests.log" filePattern="${env:HANDLE_SVR}/logs/hrls-requests.log-%d{yyyy-MM}" createOnDemand="true">
+		<RollingFile name="requestsLogger" fileName="${env:HANDLE_SVR}/logs/hrls-requests.log" filePattern="${env:HANDLE_SVR}/logs/hrls-requests.log-%d{yyyyMMdd}" createOnDemand="true">
 			<PatternLayout pattern="%d{DEFAULT} [%c] - %msg%n" />
 			<Policies>
 				<TimeBasedTriggeringPolicy />
 			</Policies>
-			<DefaultRolloverStrategy max="12" />
+			<DefaultRolloverStrategy max="28" />
 		</RollingFile>
 	</Appenders>
 	<Loggers>
