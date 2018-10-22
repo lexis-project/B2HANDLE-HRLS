@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>HandleReverseLookupServlet</groupId>
   <artifactId>HandleReverseLookupServlet</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <finalName>reverselookupservlet-${project.version}</finalName>
@@ -48,7 +48,7 @@
   	<dependency>
   		<groupId>org.eclipse.jetty</groupId>
   		<artifactId>jetty-server</artifactId>
-  		<version>8.1.18.v20150929</version>
+  		<version>9.2.25.v20180606</version>
   	</dependency>
   	<dependency>
   		<groupId>org.glassfish.jersey.containers</groupId>
