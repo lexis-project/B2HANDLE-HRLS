@@ -48,7 +48,7 @@
   	<dependency>
   		<groupId>org.eclipse.jetty</groupId>
   		<artifactId>jetty-server</artifactId>
-  		<version>9.2.25.v20180606</version>
+  		<version>[9.3.24.v20180605,)</version>
   	</dependency>
   	<dependency>
   		<groupId>org.glassfish.jersey.containers</groupId>
@@ -98,7 +98,7 @@
   	<dependency>
   		<groupId>com.mchange</groupId>
   		<artifactId>c3p0</artifactId>
-  		<version>0.9.5.2</version>
+  		<version>[0.9.5.3,)</version>
   	</dependency>
   </dependencies>
 </project>
