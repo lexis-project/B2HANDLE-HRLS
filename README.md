@@ -121,3 +121,14 @@ https://your.server:port/hrls/handles?URL=*&retrieverecords=true
 **NOTE:** `retrieverecords=true` with a limit of 100000 might give a server error: _HTTP ERROR 500_. The handle logfile shows _java.lang.OutOfMemoryError: GC overhead limit exceeded_. To prevent this increase the memory for the handle server during startup. An example is _-Xmx2G_.
 
 **NOTE:** The maximum of limit is 100000. The default of limit is 1000. By default it will only show 1000 matches when searching.
+
+
+## License
+
+Copyright 2015-2019, Deutsches Klimarechenzentrum GmbH, SURFsara, Gesellschaft für Wissenschaftliche Datenverarbeitung Göttingen mbH.
+
+The HRLS software is licensed under the Apache License, Version 2.0 (the "License"); you may not use this product except in compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
