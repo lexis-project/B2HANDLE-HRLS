@@ -9,7 +9,12 @@
 			<Policies>
 				<TimeBasedTriggeringPolicy />
 			</Policies>
-			<DefaultRolloverStrategy max="28" />
+			<DefaultRolloverStrategy>
+				<Delete basePath="${env:HANDLE_SVR}/logs/" maxDepth="1">
+          			<IfFileName glob="hrls-requests.log*" />
+          			<IfLastModified age="28d" />
+        		</Delete>
+			</DefaultRolloverStrategy>
 		</RollingFile>
 	</Appenders>
 	<Loggers>
